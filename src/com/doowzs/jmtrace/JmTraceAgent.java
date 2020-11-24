@@ -1,20 +1,16 @@
 package com.doowzs.jmtrace;
 
-import java.lang.instrument.Instrumentation;
-import org.objectweb.asm.*;
+import java.lang.instrument.*;
+import java.security.ProtectionDomain;
 
 public class JmTraceAgent {
 
     private JmTraceAgent() {
     }
 
-    public static void premain(String agentArgs, Instrumentation inst) throws Exception {
-        try {
-            ClassPrinter printer = new ClassPrinter();
-            ClassReader reader = new ClassReader(inst.getAllLoadedClasses()[0].getName());
-            reader.accept(printer, 0);
-        } catch (Exception e) {
-            throw e;
-        }
+    public static void premain(String agentArgs, Instrumentation inst) {
+        // Referred to page 21 of ASM4-Guide
+        ClassFileTransformer t = new JmClassFileTransformer();
+        inst.addTransformer(t);
     }
 }
