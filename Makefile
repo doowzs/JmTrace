@@ -18,8 +18,8 @@ build/com/doowzs/jmtrace/%.class: src/com/doowzs/jmtrace/%.java
 
 jmtrace: $(OBJS)
 	@echo "[JR] jmtrace"
-	@$(JR) cfm jmtrace.jar MANIFEST.MF -C libs org \
-		$(patsubst build/%.class,-C build %.class,$^)
+	@$(JR) cfm jmtrace.jar src/resources/META-INF/MANIFEST.MF \
+		-C libs org $(patsubst build/%.class,-C build %.class,$^)
 
 .PHONY: all test clean
 .DEFAULT_GOAL=all
