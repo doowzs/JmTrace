@@ -9,8 +9,6 @@ public class JmTraceAgent {
     }
 
     public static void premain(String agentArgs, Instrumentation inst) {
-        // Referred to page 21 of ASM4-Guide
-        ClassFileTransformer t = new JmClassFileTransformer();
-        inst.addTransformer(t);
+        inst.addTransformer(new JmClassFileTransformer());
     }
 }
