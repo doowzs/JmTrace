@@ -1,9 +1,16 @@
 JC = javac
 JR = jar
-JFLAGS = -g
+JFLAGS = -g -cp "src:libs/*"
 
 SRCS = $(wildcard src/com/doowzs/jmtrace/*.java)
 OBJS = $(patsubst src/%.java,build/%.class,$(SRCS))
+
+init:
+	@if [[ ! -d "libs" || ! -f "libs/asm.jar" ]]; then \
+		mkdir -p libs; echo "Downloading ASM from Maven center..."; \
+		curl https://repo1.maven.org/maven2/org/ow2/asm/asm/9.0/asm-9.0.jar > libs/asm.jar; \
+		cd libs && jar xf asm.jar; \
+	fi
 
 build/com/doowzs/jmtrace/%.class: src/com/doowzs/jmtrace/%.java
 	@echo "[JC] $<"
@@ -11,11 +18,13 @@ build/com/doowzs/jmtrace/%.class: src/com/doowzs/jmtrace/%.java
 
 jmtrace: $(OBJS)
 	@echo "[JR] jmtrace"
-	@$(JR) cfm jmtrace.jar MANIFEST-MF -C build $(patsubst build/%.class,%.class,$^)
+	@$(JR) cfm jmtrace.jar MANIFEST.MF -C libs org \
+		$(patsubst build/%.class,-C build %.class,$^)
 
 .PHONY: all test clean
+.DEFAULT_GOAL=all
 
-all: jmtrace
+all: init jmtrace
 
 FILE ?= P1001
 test: all
@@ -24,7 +33,7 @@ test: all
 	@$(JC) $(JFLAGS) -d build/tests/$(FILE) tests/$(FILE)/Main.java
 	@echo "[JR] build/tests/$(FILE)/Main.class"
 	@$(JR) cfe build/tests/$(FILE)/Main.jar Main -C build/tests/$(FILE) Main.class
-	@java -javaagent:jmtrace.jar -jar build/tests/$(FILE)/Main.jar
+	@java -cp "src:libs/*" -javaagent:jmtrace.jar -jar build/tests/$(FILE)/Main.jar
 
 clean:
-	@$(RM) -r build jmtrace
+	@$(RM) -r libs build *.jar
