@@ -1,0 +1,9 @@
+*
+**/.DS_Store
+!*/
+!**/*.java
+!tests/*/*.cpp
+!.gitignore
+!README.md
+!Makefile
+!MANIFEST-MF
