@@ -12,7 +12,7 @@ public class JmClassFileTransformer implements ClassFileTransformer {
         JmClassWriter cw = new JmClassWriter(cr, 0);
         JmClassVisitor cv = new JmClassVisitor(cw);
         cr.accept(cv, ClassReader.EXPAND_FRAMES); // expand all frames, see JmMethodVisitor
-        System.out.println("Complete!");
+        System.out.println("Complete transforming " + n + ".");
         return cw.toByteArray();
     }
 
