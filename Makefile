@@ -8,7 +8,7 @@ OBJS = $(patsubst src/%.java,build/%.class,$(SRCS))
 init:
 	@if [[ ! -d "libs" || ! -f "libs/asm.jar" ]]; then \
 		mkdir -p libs; echo "Downloading ASM from Maven center..."; \
-		curl https://repo1.maven.org/maven2/org/ow2/asm/asm/9.0/asm-9.0.jar > libs/asm.jar; \
+		curl -# https://repo1.maven.org/maven2/org/ow2/asm/asm/9.0/asm-9.0.jar > libs/asm.jar; \
 		cd libs && jar xf asm.jar; \
 	fi
 
