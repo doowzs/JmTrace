@@ -11,6 +11,7 @@ public class JmClassFileTransformer implements ClassFileTransformer {
         JmClassWriter cw = new JmClassWriter(cr, 0);
         JmClassVisitor cv = new JmClassVisitor(cw);
         cr.accept(cv, 0);
+        System.out.println("Complete!");
         return cw.toByteArray();
     }
 
