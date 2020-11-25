@@ -1,37 +1,21 @@
 package com.doowzs.jmtrace;
 
 import org.objectweb.asm.*;
+import org.objectweb.asm.commons.*;
 
-public class JmMethodVisitor extends MethodVisitor {
+public class JmMethodVisitor extends LocalVariablesSorter {
     
     private JmByteCodeTarget[] targets = new JmByteCodeTarget[] {
-        new JmByteCodeTarget(Opcodes.GETSTATIC, true, 0),
-        new JmByteCodeTarget(Opcodes.PUTSTATIC, false, 0),
-        new JmByteCodeTarget(Opcodes.IALOAD, true, 2),
-        new JmByteCodeTarget(Opcodes.IASTORE, false, 2, Opcodes.ILOAD, Opcodes.ISTORE)
+        new JmByteCodeTarget(Opcodes.IALOAD, true),
+        new JmByteCodeTarget(Opcodes.IASTORE, true, Type.getType("I[]"), Opcodes.ILOAD, Opcodes.ISTORE)
         // TODO: Add opcodes like xALOAD, xASTORE
     };
 
     private String owner;
-    private int localSize;
 
-    public JmMethodVisitor(MethodVisitor mv, String owner) {
-        super(Opcodes.ASM9, mv);
+    public JmMethodVisitor(MethodVisitor mv, int access, String desc, String owner) {
+        super(Opcodes.ASM9, access, desc, mv);
         this.owner = owner;
-    }
-
-    // We need to get how many local variable boxes are used to save additional data.
-    // See https://stackoverflow.com/questions/47674972/getting-the-number-of-local-variables-in-a-method.
-    @Override
-    public void visitFrame(int type, int numLocal, Object[] local, int numStack, Object[] stack) {
-        localSize = numLocal;
-        for (int i = 0; i < numLocal; ++i) {
-            if (local[i] == Opcodes.LONG || local[i] == Opcodes.DOUBLE) {
-                ++localSize;
-            }
-        }
-        System.out.println("Visit frame");
-        mv.visitFrame(type, numLocal, local, numStack, stack);
     }
 
     @Override
@@ -48,30 +32,34 @@ public class JmMethodVisitor extends MethodVisitor {
 
     @Override
     public void visitMaxs(int maxStack, int maxFrame) {
-        mv.visitMaxs(maxStack + 5, maxFrame + 10);
+        mv.visitMaxs(maxStack + 10, maxFrame + 10);
     }
 
     // Format: "R 1032 b026324c6904b2a9 cn.edu.nju.ics.Foo.someField"
     private void visitAndPrintMemoryAccessInfos(JmByteCodeTarget target) {
         // ... ref (save array and index to local variables)
-        if (target.xStore != Opcodes.NOP) {
-            mv.visitVarInsn(target.xStore, localSize + 2);
+        int arrayId = 0, indexId = 0, valueId = 0;
+        if (target.isWrite) {
+            valueId = newLocal(target.type.getElementType());
+            mv.visitVarInsn(target.xStore, valueId);
         }
-        for (int i = target.nArgs - 1; i >= 0; --i) {
-            mv.visitVarInsn(Opcodes.ISTORE, localSize + i);
+        if (target.isArray) {
+            arrayId = newLocal(target.type);
+            indexId = newLocal(Type.INT_TYPE);
+            mv.visitVarInsn(Opcodes.ISTORE, indexId);
+            mv.visitVarInsn(Opcodes.ASTORE, arrayId);
+            mv.visitVarInsn(Opcodes.ALOAD, arrayId);
+            mv.visitVarInsn(Opcodes.ILOAD, indexId);
         }
-        for (int i = 0; i < target.nArgs; ++i) {
-            mv.visitVarInsn(Opcodes.ILOAD, localSize + i);
-        }
-        if (target.xLoad != Opcodes.NOP) {
-            mv.visitVarInsn(target.xLoad, localSize + 2);
+        if (target.isWrite) {
+            mv.visitVarInsn(target.xLoad, valueId);
         }
         mv.visitInsn(target.opcode); // consume the instruction
 
         // ... ->
         // ... System.out string
         mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
-        mv.visitLdcInsn(target.isRead ? "R " : "W ");
+        mv.visitLdcInsn(target.isWrite ? "W " : "R ");
         mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "print", "(Ljava/lang/String;)V", false);
         
         // ... ->
@@ -82,12 +70,5 @@ public class JmMethodVisitor extends MethodVisitor {
         mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Thread", "getId", "()J", false);
         mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(J)V", false);
         
-        // ... ->
-        // ... System.out ref
-        // ... Syetem.out System.objectHashCode
-        mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
-        mv.visitVarInsn(Opcodes.ILOAD, localSize);
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/System", "objectHashCode", "(O)I", false);
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(I)V", false);
     }
 } 

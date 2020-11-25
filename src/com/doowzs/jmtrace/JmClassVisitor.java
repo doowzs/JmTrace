@@ -22,7 +22,7 @@ public class JmClassVisitor extends ClassVisitor {
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor mv = cv.visitMethod(access, name, desc, signature, exceptions);
         if (mv != null) {
-            mv = new JmMethodVisitor(mv, owner);
+            mv = new JmMethodVisitor(mv, access, desc, owner);
         }
         return mv;
     }
