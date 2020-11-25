@@ -2,6 +2,7 @@ package com.doowzs.jmtrace;
 
 import java.lang.instrument.*;
 import java.security.ProtectionDomain;
+import org.objectweb.asm.ClassReader;
 
 public class JmClassFileTransformer implements ClassFileTransformer {
 
@@ -10,7 +11,7 @@ public class JmClassFileTransformer implements ClassFileTransformer {
         JmClassReader cr = new JmClassReader(b);
         JmClassWriter cw = new JmClassWriter(cr, 0);
         JmClassVisitor cv = new JmClassVisitor(cw);
-        cr.accept(cv, 0);
+        cr.accept(cv, ClassReader.EXPAND_FRAMES); // expand all frames, see JmMethodVisitor
         System.out.println("Complete!");
         return cw.toByteArray();
     }
