@@ -6,8 +6,8 @@ import org.objectweb.asm.commons.*;
 public class JmMethodVisitor extends LocalVariablesSorter {
     
     private JmByteCodeTarget[] targets = new JmByteCodeTarget[] {
-        new JmByteCodeTarget(Opcodes.IALOAD, true, Type.getType("I[]")),
-        new JmByteCodeTarget(Opcodes.IASTORE, true, Type.getType("I[]"), Opcodes.ILOAD, Opcodes.ISTORE)
+        new JmByteCodeTarget(Opcodes.IALOAD, true, Type.getType("[I")),
+        new JmByteCodeTarget(Opcodes.IASTORE, true, Type.getType("[I"), Opcodes.ILOAD, Opcodes.ISTORE)
         // TODO: Add opcodes like xALOAD, xASTORE
     };
 
@@ -68,7 +68,28 @@ public class JmMethodVisitor extends LocalVariablesSorter {
         mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
         mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Thread", "currentThread", "()Ljava/lang/Thread;", false);
         mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Thread", "getId", "()J", false);
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(J)V", false);
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "print", "(J)V", false);
+        mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
+        mv.visitLdcInsn(" ");
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "print", "(Ljava/lang/String;)V", false);
         
+        // ... ->
+        // ... System.out array[1]
+        // ... System.out array 0 object
+        // ... System.out array 0 hashCode
+        // ... System.out array
+        // ... System.out string
+        mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
+        mv.visitLdcInsn("%016X");
+        mv.visitInsn(Opcodes.ICONST_1);
+        mv.visitTypeInsn(Opcodes.ANEWARRAY, "Ljava/lang/Object;");
+        mv.visitInsn(Opcodes.DUP);
+        mv.visitInsn(Opcodes.ICONST_0);
+        mv.visitVarInsn(Opcodes.ALOAD, arrayId);
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/System", "identityHashCode", "(Ljava/lang/Object;)I", false);
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
+        mv.visitInsn(Opcodes.AASTORE);
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/String", "format", "(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;", false);
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String)V", false);
     }
 } 
