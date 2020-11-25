@@ -10,10 +10,11 @@ public class JmByteCodeTarget {
     public int xLoad;
     public int xStore;
 
-    JmByteCodeTarget(int opcode, boolean isArray) {
+    JmByteCodeTarget(int opcode, boolean isArray, Type type) {
         this.opcode = opcode;
         this.isWrite = false;
         this.isArray = isArray;
+        this.type = type;
         this.xLoad = Opcodes.NOP;
         this.xStore = Opcodes.NOP;
     }
@@ -22,6 +23,7 @@ public class JmByteCodeTarget {
         this.opcode = opcode;
         this.isWrite = true;
         this.isArray = isArray;
+        this.type = type;
         this.xLoad = xLoad;
         this.xStore = xStore;
     }

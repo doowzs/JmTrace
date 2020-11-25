@@ -6,7 +6,7 @@ import org.objectweb.asm.commons.*;
 public class JmMethodVisitor extends LocalVariablesSorter {
     
     private JmByteCodeTarget[] targets = new JmByteCodeTarget[] {
-        new JmByteCodeTarget(Opcodes.IALOAD, true),
+        new JmByteCodeTarget(Opcodes.IALOAD, true, Type.getType("I[]")),
         new JmByteCodeTarget(Opcodes.IASTORE, true, Type.getType("I[]"), Opcodes.ILOAD, Opcodes.ISTORE)
         // TODO: Add opcodes like xALOAD, xASTORE
     };
