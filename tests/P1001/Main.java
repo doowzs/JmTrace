@@ -2,6 +2,11 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println(String.format("0x%08X", 5));
+        Scanner cin = new Scanner(System.in);
+        int a[] = new int[3];
+        a[0] = cin.nextInt();
+        a[1] = cin.nextInt();
+        a[2] = a[0] + a[1];
+        System.out.println(a[2]);
     }
 }

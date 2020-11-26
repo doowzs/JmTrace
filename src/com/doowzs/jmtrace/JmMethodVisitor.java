@@ -55,41 +55,6 @@ public class JmMethodVisitor extends LocalVariablesSorter {
             mv.visitVarInsn(target.xLoad, valueId);
         }
         mv.visitInsn(target.opcode); // consume the instruction
-
-        // ... ->
-        // ... System.out string
-        mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
-        mv.visitLdcInsn(target.isWrite ? "W " : "R ");
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "print", "(Ljava/lang/String;)V", false);
-        
-        // ... ->
-        // ... System.out currentThread
-        // ... System.out threadID
-        mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Thread", "currentThread", "()Ljava/lang/Thread;", false);
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Thread", "getId", "()J", false);
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "print", "(J)V", false);
-        mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
-        mv.visitLdcInsn(" ");
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "print", "(Ljava/lang/String;)V", false);
-        
-        // ... ->
-        // ... System.out array[1]
-        // ... System.out array 0 object
-        // ... System.out array 0 hashCode
-        // ... System.out array
-        // ... System.out string
-        mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
-        mv.visitLdcInsn("%016X");
-        mv.visitInsn(Opcodes.ICONST_1);
-        mv.visitTypeInsn(Opcodes.ANEWARRAY, "Ljava/lang/Object;");
-        mv.visitInsn(Opcodes.DUP);
-        mv.visitInsn(Opcodes.ICONST_0);
-        mv.visitVarInsn(Opcodes.ALOAD, arrayId);
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/System", "identityHashCode", "(Ljava/lang/Object;)I", false);
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
-        mv.visitInsn(Opcodes.AASTORE);
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/String", "format", "(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;", false);
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String)V", false);
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(JmTraceLogger.class), "printMemoryAccess", "()V", false);
     }
 } 
