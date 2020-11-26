@@ -29,6 +29,8 @@ public class JmTraceTarget {
     }
 
     public static JmTraceTarget[] targets = new JmTraceTarget[] {
+        new JmTraceTarget(Opcodes.AALOAD, true, Type.getType("[Ljava/lang/Object;")),
+        new JmTraceTarget(Opcodes.AASTORE, true, Type.getType("[Ljava/lang/Object;"), Opcodes.ALOAD, Opcodes.ASTORE),
         new JmTraceTarget(Opcodes.IALOAD, true, Type.getType("[I")),
         new JmTraceTarget(Opcodes.IASTORE, true, Type.getType("[I"), Opcodes.ILOAD, Opcodes.ISTORE)
         // TODO: Add opcodes like xALOAD, xASTORE

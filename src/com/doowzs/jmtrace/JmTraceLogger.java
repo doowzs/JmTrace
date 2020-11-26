@@ -17,6 +17,6 @@ public class JmTraceLogger {
         System.out.print(target.isWrite ? "W" : "R");
         System.out.printf(" %d", Thread.currentThread().getId());
         System.out.printf(" %016x", System.identityHashCode(array));
-        System.out.printf(" %s[%d]\n", array.getClass().getComponentType(), index);
+        System.out.printf(" %s[%d]\n", array.getClass().getComponentType().getCanonicalName(), index);
     }
 }
