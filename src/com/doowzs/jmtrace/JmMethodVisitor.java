@@ -14,7 +14,7 @@ public class JmMethodVisitor extends LocalVariablesSorter {
 
     @Override
     public void visitInsn(int opcode) {
-        System.out.println("visitInsn " + opcode);
+        //System.out.println("visitInsn " + opcode);
         for (int i = 0; i < JmTraceTarget.targets.length; ++i) {
             if (opcode == JmTraceTarget.targets[i].opcode) {
                 visitAndPrintMemoryAccessInfos(JmTraceTarget.targets[i]);
