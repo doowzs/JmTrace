@@ -4,12 +4,6 @@ import org.objectweb.asm.*;
 import org.objectweb.asm.commons.*;
 
 public class JmMethodVisitor extends LocalVariablesSorter {
-    
-    private JmByteCodeTarget[] targets = new JmByteCodeTarget[] {
-        new JmByteCodeTarget(Opcodes.IALOAD, true, Type.getType("[I")),
-        new JmByteCodeTarget(Opcodes.IASTORE, true, Type.getType("[I"), Opcodes.ILOAD, Opcodes.ISTORE)
-        // TODO: Add opcodes like xALOAD, xASTORE
-    };
 
     private String owner;
 
@@ -21,9 +15,9 @@ public class JmMethodVisitor extends LocalVariablesSorter {
     @Override
     public void visitInsn(int opcode) {
         System.out.println("visitInsn " + opcode);
-        for (int i = 0; i < targets.length; ++i) {
-            if (opcode == targets[i].opcode) {
-                visitAndPrintMemoryAccessInfos(targets[i]);
+        for (int i = 0; i < JmTraceTarget.targets.length; ++i) {
+            if (opcode == JmTraceTarget.targets[i].opcode) {
+                visitAndPrintMemoryAccessInfos(JmTraceTarget.targets[i]);
                 return;
             }
         }
@@ -36,7 +30,7 @@ public class JmMethodVisitor extends LocalVariablesSorter {
     }
 
     // Format: "R 1032 b026324c6904b2a9 cn.edu.nju.ics.Foo.someField"
-    private void visitAndPrintMemoryAccessInfos(JmByteCodeTarget target) {
+    private void visitAndPrintMemoryAccessInfos(JmTraceTarget target) {
         // ... ref (save array and index to local variables)
         int arrayId = 0, indexId = 0, valueId = 0;
         if (target.isWrite) {
@@ -55,6 +49,12 @@ public class JmMethodVisitor extends LocalVariablesSorter {
             mv.visitVarInsn(target.xLoad, valueId);
         }
         mv.visitInsn(target.opcode); // consume the instruction
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(JmTraceLogger.class), "printMemoryAccess", "()V", false);
+        mv.visitIntInsn(Opcodes.BIPUSH, target.opcode);
+        if (target.isArray) {
+            mv.visitVarInsn(Opcodes.ALOAD, arrayId);
+            mv.visitVarInsn(Opcodes.ILOAD, indexId);
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(JmTraceLogger.class),
+                               "printMemoryAccess", "(ILjava/lang/Object;I)V", false);
+        }
     }
 } 

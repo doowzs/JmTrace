@@ -2,7 +2,7 @@ package com.doowzs.jmtrace;
 
 import org.objectweb.asm.*;
 
-public class JmByteCodeTarget {
+public class JmTraceTarget {
     public int opcode;
     public boolean isWrite;
     public boolean isArray;
@@ -10,7 +10,7 @@ public class JmByteCodeTarget {
     public int xLoad;
     public int xStore;
 
-    JmByteCodeTarget(int opcode, boolean isArray, Type type) {
+    JmTraceTarget(int opcode, boolean isArray, Type type) {
         this.opcode = opcode;
         this.isWrite = false;
         this.isArray = isArray;
@@ -19,7 +19,7 @@ public class JmByteCodeTarget {
         this.xStore = Opcodes.NOP;
     }
 
-    JmByteCodeTarget(int opcode, boolean isArray, Type type, int xLoad, int xStore) {
+    JmTraceTarget(int opcode, boolean isArray, Type type, int xLoad, int xStore) {
         this.opcode = opcode;
         this.isWrite = true;
         this.isArray = isArray;
@@ -27,4 +27,10 @@ public class JmByteCodeTarget {
         this.xLoad = xLoad;
         this.xStore = xStore;
     }
+
+    public static JmTraceTarget[] targets = new JmTraceTarget[] {
+        new JmTraceTarget(Opcodes.IALOAD, true, Type.getType("[I")),
+        new JmTraceTarget(Opcodes.IASTORE, true, Type.getType("[I"), Opcodes.ILOAD, Opcodes.ISTORE)
+        // TODO: Add opcodes like xALOAD, xASTORE
+    };
 }
