@@ -21,7 +21,8 @@ public class JmClassVisitor extends ClassVisitor {
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor mv = cv.visitMethod(access, name, desc, signature, exceptions);
-        if (!isInterface && mv != null) {
+        if (mv != null) {
+            System.out.println(name);
             mv = new JmMethodVisitor(mv, access, desc, owner);
         }
         return mv;
