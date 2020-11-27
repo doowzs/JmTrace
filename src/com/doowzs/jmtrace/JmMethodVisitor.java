@@ -41,17 +41,25 @@ public class JmMethodVisitor extends LocalVariablesSorter {
 
     private void visitAndPrintMemoryAccessInfos(JmTraceTarget target, String owner, String name, String desc) {
         int objectId = 0;
+        int valueId = 0;
         if (target.isDynamic) {
-            objectId = newLocal(Type.getType(desc));
-            mv.visitVarInsn(Opcodes.AASTORE, objectId);
-            mv.visitVarInsn(Opcodes.AALOAD, objectId);
+            if (target.isWrite) {
+                valueId = newLocal(Type.getType(desc));
+                mv.visitVarInsn(Opcodes.ASTORE, valueId);
+            }
+            objectId = newLocal(Type.getType(owner));
+            mv.visitVarInsn(Opcodes.ASTORE, objectId);
+            mv.visitVarInsn(Opcodes.ALOAD, objectId);
+            if (target.isWrite) {
+                mv.visitVarInsn(Opcodes.ALOAD, valueId);
+            }
         }
         mv.visitFieldInsn(target.opcode, owner, name, desc); // consume the instruction
         mv.visitIntInsn(Opcodes.SIPUSH, target.opcode);
         if (target.isDynamic) {
-            mv.visitVarInsn(Opcodes.AALOAD, objectId);
+            mv.visitVarInsn(Opcodes.ALOAD, objectId);
         } else {
-            mv.visitFieldInsn(Opcodes.GETSTATIC, owner, name, desc);
+            mv.visitInsn(Opcodes.ACONST_NULL);
         }
         mv.visitLdcInsn(owner);
         mv.visitLdcInsn(name);
