@@ -33,7 +33,7 @@ public class JmTraceLogger {
         }
 
         int threadId = (int)Thread.currentThread().getId();
-        long hashCode = ((long)System.identityHashCode(array) << 32) | index;
+        long hashCode = ((long)System.identityHashCode(array) << 32) | ((long)index & 0xffffffffL);
         String typeName = array.getClass().getComponentType().getCanonicalName();
         System.out.print(target.isWrite ? "W" : "R");
         System.out.printf(" %d", threadId);
