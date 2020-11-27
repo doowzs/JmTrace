@@ -13,8 +13,18 @@ public class JmMethodVisitor extends LocalVariablesSorter {
     }
 
     @Override
+    public void visitFieldInsn(int opcode, String owner, String name, String desc) {
+        for (int i = 0; i < JmTraceTarget.targets.length; ++i) {
+            if (opcode == JmTraceTarget.targets[i].opcode) {
+                visitAndPrintMemoryAccessInfos(JmTraceTarget.targets[i], owner, name, desc);
+                return;
+            }
+        }
+        mv.visitFieldInsn(opcode, owner, name, desc);
+    }
+
+    @Override
     public void visitInsn(int opcode) {
-        //System.out.println("visitInsn " + opcode);
         for (int i = 0; i < JmTraceTarget.targets.length; ++i) {
             if (opcode == JmTraceTarget.targets[i].opcode) {
                 visitAndPrintMemoryAccessInfos(JmTraceTarget.targets[i]);
@@ -29,32 +39,47 @@ public class JmMethodVisitor extends LocalVariablesSorter {
         mv.visitMaxs(maxStack + 10, maxFrame + 10);
     }
 
-    // Format: "R 1032 b026324c6904b2a9 cn.edu.nju.ics.Foo.someField"
+    private void visitAndPrintMemoryAccessInfos(JmTraceTarget target, String owner, String name, String desc) {
+        int objectId = 0;
+        if (target.isDynamic) {
+            objectId = newLocal(Type.getType(desc));
+            mv.visitVarInsn(Opcodes.AASTORE, objectId);
+            mv.visitVarInsn(Opcodes.AALOAD, objectId);
+        }
+        mv.visitFieldInsn(target.opcode, owner, name, desc); // consume the instruction
+        mv.visitIntInsn(Opcodes.SIPUSH, target.opcode);
+        if (target.isDynamic) {
+            mv.visitVarInsn(Opcodes.AALOAD, objectId);
+        } else {
+            mv.visitFieldInsn(Opcodes.GETSTATIC, owner, name, desc);
+        }
+        mv.visitLdcInsn(owner);
+        mv.visitLdcInsn(name);
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(JmTraceLogger.class),
+                           "printMemoryAccess", "(ILjava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V", false);
+    }
+
     private void visitAndPrintMemoryAccessInfos(JmTraceTarget target) {
-        // ... ref (save array and index to local variables)
-        int arrayId = 0, indexId = 0, valueId = 0;
+        // save array and index to local variables
+        int arrayId = newLocal(target.type);
+        int indexId = newLocal(Type.INT_TYPE);
+        int valueId = 0;
         if (target.isWrite) {
             valueId = newLocal(target.type.getElementType());
             mv.visitVarInsn(target.xStore, valueId);
         }
-        if (target.isArray) {
-            arrayId = newLocal(target.type);
-            indexId = newLocal(Type.INT_TYPE);
-            mv.visitVarInsn(Opcodes.ISTORE, indexId);
-            mv.visitVarInsn(Opcodes.ASTORE, arrayId);
-            mv.visitVarInsn(Opcodes.ALOAD, arrayId);
-            mv.visitVarInsn(Opcodes.ILOAD, indexId);
-        }
+        mv.visitVarInsn(Opcodes.ISTORE, indexId);
+        mv.visitVarInsn(Opcodes.ASTORE, arrayId);
+        mv.visitVarInsn(Opcodes.ALOAD, arrayId);
+        mv.visitVarInsn(Opcodes.ILOAD, indexId);
         if (target.isWrite) {
             mv.visitVarInsn(target.xLoad, valueId);
         }
         mv.visitInsn(target.opcode); // consume the instruction
-        mv.visitIntInsn(Opcodes.BIPUSH, target.opcode);
-        if (target.isArray) {
-            mv.visitVarInsn(Opcodes.ALOAD, arrayId);
-            mv.visitVarInsn(Opcodes.ILOAD, indexId);
-            mv.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(JmTraceLogger.class),
-                               "printMemoryAccess", "(ILjava/lang/Object;I)V", false);
-        }
+        mv.visitIntInsn(Opcodes.SIPUSH, target.opcode);
+        mv.visitVarInsn(Opcodes.ALOAD, arrayId);
+        mv.visitVarInsn(Opcodes.ILOAD, indexId);
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(JmTraceLogger.class),
+                           "printMemoryAccess", "(ILjava/lang/Object;I)V", false);
     }
 } 
