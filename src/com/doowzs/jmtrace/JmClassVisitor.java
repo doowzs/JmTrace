@@ -17,12 +17,11 @@ public class JmClassVisitor extends ClassVisitor {
         owner = name;
         isInterface = (access & Opcodes.ACC_INTERFACE) != 0;
     }
-    
+
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor mv = cv.visitMethod(access, name, desc, signature, exceptions);
         if (mv != null) {
-            System.out.println(name);
             mv = new JmMethodVisitor(mv, access, desc, owner);
         }
         return mv;

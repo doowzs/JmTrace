@@ -17,10 +17,13 @@ public class JmTraceLogger {
             return;
         }
 
+        int threadId = (int)Thread.currentThread().getId();
+        long hashCode = (((long)(object == null ? owner.hashCode() : System.identityHashCode(object))) << 32) | ((long)name.hashCode() & 0xffffffffL);
+        String typeName = owner.replace("/", ".");
         System.out.print(target.isWrite ? "W" : "R");
-        System.out.printf(" %d", Thread.currentThread().getId());
-        System.out.printf(" %016x", System.identityHashCode(object));
-        System.out.printf(" %s.%s\n", owner.replace("/", "."), name);
+        System.out.printf(" %d", threadId);
+        System.out.printf(" %016x", hashCode);
+        System.out.printf(" %s.%s\n", typeName, name);
     }
     
     public static void printMemoryAccess(int opcode, Object array, int index) {
@@ -29,9 +32,12 @@ public class JmTraceLogger {
             return;
         }
 
+        int threadId = (int)Thread.currentThread().getId();
+        long hashCode = ((long)System.identityHashCode(array) << 32) | index;
+        String typeName = array.getClass().getComponentType().getCanonicalName();
         System.out.print(target.isWrite ? "W" : "R");
-        System.out.printf(" %d", Thread.currentThread().getId());
-        System.out.printf(" %016x", ((long)System.identityHashCode(array) << 32) | index);
-        System.out.printf(" %s[%d]\n", array.getClass().getComponentType().getCanonicalName(), index);
+        System.out.printf(" %d", threadId);
+        System.out.printf(" %016x", hashCode);
+        System.out.printf(" %s[%d]\n", typeName, index);
     }
 }
