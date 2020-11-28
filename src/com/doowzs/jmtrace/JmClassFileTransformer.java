@@ -9,8 +9,7 @@ public class JmClassFileTransformer implements ClassFileTransformer {
 
     @Override
     public byte[] transform​(ClassLoader l, String n, Class<?> c, ProtectionDomain d, byte[] b) throws IllegalClassFormatException {
-        if (n.startsWith("java") || n.startsWith("sun") || n.startsWith("jdk") || 
-            /* FIXME */ n.startsWith("com/apple") || n.startsWith("apple") || n.startsWith("com/sun") || n.startsWith("com.sun") ) {
+        if (n.startsWith("java") || n.startsWith("sun") || n.startsWith("jdk")) {
             return null;
         } else {
             JmClassReader cr = new JmClassReader(b);

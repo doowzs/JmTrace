@@ -1,1 +1,2 @@
 Premain-Class: com.doowzs.jmtrace.JmTraceAgent
+Boot-Class-Path: jmtrace.jar

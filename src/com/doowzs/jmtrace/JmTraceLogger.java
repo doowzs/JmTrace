@@ -1,5 +1,7 @@
 package com.doowzs.jmtrace;
 
+import com.doowzs.jmtrace.JmTraceTarget;
+
 public class JmTraceLogger {
 
     public static JmTraceTarget getTraceTarget(int opcode) {
